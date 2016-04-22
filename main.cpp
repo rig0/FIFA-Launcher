@@ -9,9 +9,7 @@ using namespace std;
 
 bool IsRunning(LPCSTR pName);
 void Start(LPCTSTR pName, LPCTSTR pArgs);
-void GoTo(LPCTSTR pName);
 void Kill(LPCTSTR pName);
-void PressPlay();
 
 int main()
 {
@@ -45,11 +43,11 @@ int main()
 
     cout << "Launching 'fifaconfig.exe'... \n" << endl;
 
-    Start("origin://launchgame/Origin.OFR.50.0000462",NULL);
+    Start("origin://launchgame/Origin.OFR.50.0000781",NULL);
 
     cout << "Waiting for 'fifaconfig.exe'... \n" << endl;
 
-    for (int i = 50; IsRunning("FIFA 15") == false; i--)
+    for (int i = 50; IsRunning("FIFA 16") == false; i--)
     {
         Sleep(500);
         if ( i == 0 )
@@ -62,29 +60,35 @@ int main()
 
     cout << "Sending ENTER key to 'fifaconfig.exe'... \n" << endl;
 
-    GoTo("FIFA 15");
-    PressPlay();
+    HWND config_hwnd;
+    config_hwnd = FindWindow(NULL, "FIFA 16");
+    SetForegroundWindow(config_hwnd);
+    INPUT ip;
+    ip.type = INPUT_KEYBOARD;
+    ip.ki.wScan = 0;
+    ip.ki.time = 0;
+    ip.ki.dwExtraInfo = 0;
+    ip.ki.wVk = 0x0D;
+    ip.ki.dwFlags = 0;
+    SendInput(1, &ip, sizeof(INPUT));
+    ip.ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(1, &ip, sizeof(INPUT));
 
-    cout << "Waiting for FIFA to launch... \n" << endl;
+    cout << "Waiting 10 seconds to close 'fifaconfig.exe'... \n" << endl;
 
-    for (int i = 50; IsRunning("EA Sports FIFA 15") == false; i--)
-    {
-        Sleep(500);
-        if ( i == 0 )
-        {
-            cout << "Timed out." << endl;
-            Sleep (3000);
-            return 0;
-        }
-    }
+    Sleep(10000);
 
     cout << "Closing 'fifaconfig.exe'... \n" << endl;
 
-    Kill("fifaconfig.exe");
+    DWORD config_pid;
+    GetWindowThreadProcessId(config_hwnd, &config_pid);
+    HANDLE config_hndl;
+    config_hndl = OpenProcess(PROCESS_ALL_ACCESS, FALSE, config_pid);
+    TerminateProcess(config_hndl, 0);
 
     cout << "Waiting for FIFA to close... \n" << endl;
 
-    while (IsRunning("EA Sports FIFA 15")){
+    while (IsRunning("FIFA 16")){
         Sleep(500);
     }
 
@@ -111,24 +115,6 @@ bool IsRunning(LPCSTR pName){
 
 void Start(LPCTSTR pName, LPCTSTR pArgs){
     ShellExecute(NULL,"open",pName,pArgs,NULL,SW_SHOW);
-}
-
-void GoTo(LPCTSTR pName){
-    HWND hwnd = FindWindow(NULL,pName);
-    if(hwnd){SetForegroundWindow(hwnd);}
-}
-
-void PressPlay(){
-    INPUT ip;
-    ip.type = INPUT_KEYBOARD;
-    ip.ki.wScan = 0;
-    ip.ki.time = 0;
-    ip.ki.dwExtraInfo = 0;
-    ip.ki.wVk = 0x0D;
-    ip.ki.dwFlags = 0;
-    SendInput(1, &ip, sizeof(INPUT));
-    ip.ki.dwFlags = KEYEVENTF_KEYUP;
-    SendInput(1, &ip, sizeof(INPUT));
 }
 
 void Kill(LPCTSTR pName){
